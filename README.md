@@ -2,6 +2,13 @@
 
 Migration library written in go inspired by [flyway](https://flywaydb.org/)
 
+## Download
+
+```shell
+go get github.com/gabrielaraujosouza/goflyway
+```
+
+
 ## Key Validations
 ### Duplicated version
 - It checks if there scritps with same version number
