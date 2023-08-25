@@ -1,5 +1,7 @@
 # Go Flyway
 
+<img align="right" width="159px" src="https://raw.githubusercontent.com/gabrielaraujosouza/logo/master/goflyway-logo.png">
+
 Migration library written in go inspired by [flyway](https://flywaydb.org/)
 
 ## Download
