@@ -11,7 +11,7 @@ go get github.com/gabrielaraujosouza/goflyway
 
 ## Key Validations
 ### Duplicated version
-- It checks if there scritps with same version number
+- It checks if there are scritps with same version number
 ### Checksum mismatch
 - This guarantees the integrity of the script, that is, it is not possible to edit a script after it has been executed
 
@@ -45,7 +45,7 @@ func main() {
 	conf := goflyway.GoFlywayConfig{
 		Db:       db,
 		Driver:   goflyway.POSTGRES,
-		Location: "[SCRIPT_FOLDER_PATH_HERE]", // if not passed, it will search for db/migration on current Workspace
+		Location: "[SCRIPT_FOLDER_PATH_HERE]", // Example: /home/user/my-prokect/db/migration
 	}
 
 	// Call the method Migrate
@@ -77,7 +77,7 @@ Property | Default | Description |
 **Table** | `goflyway_schema_history` | `Name of the schema history table that will be used by GoFlyway` 
 **SqlMigrationPrefix** | `V` | `File name prefix for SQL migrations` | Used for stable releases |
 **SqlMigrationSeparator** | `__` | `File name separator for SQL migrations.`
-**Location** | `{CURRENT_WORK_DIR}/db/migration` | `Location of migrations scripts`
+**Location** | - | `Location of migrations scripts`
 **OutOfOrder** | `false` |`Whether to allow migrations to be run out of order`
 **IgnoreMissingMigrations** | `false` | `Ignore missing migrations`
 **Db** | -| `Database connection`
