@@ -9,7 +9,8 @@ import (
 func TestValidateMigrations(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -30,7 +31,8 @@ func TestValidateMigrations(t *testing.T) {
 func TestValidateMigrations_DuplicatedVersionError(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -43,7 +45,7 @@ func TestValidateMigrations_DuplicatedVersionError(t *testing.T) {
 	dbMigrations := getDatabaseMigrations()
 
 	localMigrations := getLocalMigrations()
-	localMigrations = append(localMigrations, LocalScript{
+	localMigrations = append(localMigrations, localScript{
 		Version:     "2",
 		Description: "test duplicated alter table product",
 		Script:      "V2__test_duplicated_alter_table_product.sql",
@@ -64,7 +66,8 @@ func TestValidateMigrations_DuplicatedVersionError(t *testing.T) {
 func TestValidateMigrations_ChecksumMismatchError(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -93,7 +96,8 @@ func TestValidateMigrations_ChecksumMismatchError(t *testing.T) {
 func TestValidateMigrations_DescriptionMismatchError(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -122,7 +126,8 @@ func TestValidateMigrations_DescriptionMismatchError(t *testing.T) {
 func TestValidateMigrations_OutOfOrderError(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -154,7 +159,8 @@ func TestValidateMigrations_OutOfOrderError(t *testing.T) {
 func TestValidateMigrations_ValidateMissionMigrationError(t *testing.T) {
 
 	g, err := newGoFlywayRunner(GoFlywayConfig{
-		Driver: POSTGRES,
+		Driver:   POSTGRES,
+		Location: getWorkPath() + "/utils/test/db/custom-migration",
 	})
 
 	if err != nil {
@@ -301,9 +307,9 @@ func TestCalculateChecksum(t *testing.T) {
 	}
 }
 
-func getDatabaseMigrations() []HistoryModel {
+func getDatabaseMigrations() []historyModel {
 	currentTime := time.Now()
-	dbMigrations := []HistoryModel{
+	dbMigrations := []historyModel{
 		{
 			InstalledRank: 1,
 			Version:       "1",
@@ -345,8 +351,8 @@ func getDatabaseMigrations() []HistoryModel {
 	return dbMigrations
 }
 
-func getLocalMigrations() []LocalScript {
-	localMigrations := []LocalScript{
+func getLocalMigrations() []localScript {
+	localMigrations := []localScript{
 		{
 			Version:     "1",
 			Description: "test create table product",

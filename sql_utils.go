@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type HistoryModelDb struct {
+type historyModelDb struct {
 	InstalledRank *int
 	Version       *string
 	Description   *string
@@ -70,17 +70,17 @@ func validateDriver(s string) error {
 }
 
 // selectMigrationHistory Query migration table
-func selectMigrationHistory(db *sql.DB, query string) ([]HistoryModel, error) {
+func selectMigrationHistory(db *sql.DB, query string) ([]historyModel, error) {
 	rows, err := db.Query(query)
 
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var migrations []HistoryModelDb
+	var migrations []historyModelDb
 
 	for rows.Next() {
-		var m HistoryModelDb
+		var m historyModelDb
 		err = rows.Scan(
 			&m.InstalledRank,
 			&m.Version,
@@ -99,10 +99,10 @@ func selectMigrationHistory(db *sql.DB, query string) ([]HistoryModel, error) {
 		migrations = append(migrations, m)
 	}
 
-	var result []HistoryModel
+	var result []historyModel
 
 	for _, v := range migrations {
-		var m HistoryModel
+		var m historyModel
 
 		if v.InstalledRank != nil {
 			m.InstalledRank = *v.InstalledRank
@@ -148,7 +148,7 @@ func selectMigrationHistory(db *sql.DB, query string) ([]HistoryModel, error) {
 	return result, nil
 }
 
-func executeMigration(db *sql.DB, insertQuery string, history HistoryModel, g *GoFlywayRunner) (*HistoryModel, error) {
+func executeMigration(db *sql.DB, insertQuery string, history historyModel, g *GoFlywayRunner) (*historyModel, error) {
 
 	startExec := time.Now().UnixMilli()
 
@@ -170,7 +170,7 @@ func executeMigration(db *sql.DB, insertQuery string, history HistoryModel, g *G
 	return nil, nil
 }
 
-func insertMigration(db *sql.DB, insertQuery string, history HistoryModel) (int64, error) {
+func insertMigration(db *sql.DB, insertQuery string, history historyModel) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return fail(err)
@@ -201,7 +201,7 @@ func insertMigration(db *sql.DB, insertQuery string, history HistoryModel) (int6
 	return rw, nil
 }
 
-func executeScript(db *sql.DB, history HistoryModel, g *GoFlywayRunner) (int64, error) {
+func executeScript(db *sql.DB, history historyModel, g *GoFlywayRunner) (int64, error) {
 
 	scriptFile := fmt.Sprintf("%s/%s", g.config.Location, history.Script)
 

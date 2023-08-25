@@ -3,14 +3,15 @@ package goflyway
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
 const tableName = "goflyway_schema_history"
 const sqlMigrationPrefix = "V"
 const sqlMigrationSeparator = "__"
-const location = "/db/migration"
 
 var logg = log.Default()
 
@@ -46,7 +47,7 @@ func extractValuesFromScriptName(name string, prefix string, separator string, s
 	return version, strings.TrimSpace(strings.ReplaceAll(description, "_", " ")), nil
 }
 
-func findMigrationByVersion(migrations []HistoryModel, version string) *HistoryModel {
+func findMigrationByVersion(migrations []historyModel, version string) *historyModel {
 	for _, m := range migrations {
 		if m.Version == version {
 			return &m
@@ -55,7 +56,7 @@ func findMigrationByVersion(migrations []HistoryModel, version string) *HistoryM
 	return nil
 }
 
-func findMigrationIndexByVersion(migrations []HistoryModel, version string) int {
+func findMigrationIndexByVersion(migrations []historyModel, version string) int {
 	for i, m := range migrations {
 		if m.Version == version {
 			return i
@@ -64,8 +65,8 @@ func findMigrationIndexByVersion(migrations []HistoryModel, version string) int 
 	return -1
 }
 
-func findLocalMigrationsByVersion(migrations []LocalScript, version string) []LocalScript {
-	mg := []LocalScript{}
+func findLocalMigrationsByVersion(migrations []localScript, version string) []localScript {
+	mg := []localScript{}
 	for _, m := range migrations {
 		if m.Version == version {
 			mg = append(mg, m)
@@ -74,7 +75,7 @@ func findLocalMigrationsByVersion(migrations []LocalScript, version string) []Lo
 	return mg
 }
 
-func findLocalMigrationByVersion(migrations []LocalScript, version string) *LocalScript {
+func findLocalMigrationByVersion(migrations []localScript, version string) *localScript {
 	for _, m := range migrations {
 		if m.Version == version {
 			return &m
@@ -83,7 +84,7 @@ func findLocalMigrationByVersion(migrations []LocalScript, version string) *Loca
 	return nil
 }
 
-func findLargestInstalledRank(migrations []HistoryModel) int {
+func findLargestInstalledRank(migrations []historyModel) int {
 
 	largest := 0
 	for _, m := range migrations {
@@ -95,7 +96,7 @@ func findLargestInstalledRank(migrations []HistoryModel) int {
 	return largest
 }
 
-func getScriptNames(localMigrations []LocalScript) string {
+func getScriptNames(localMigrations []localScript) string {
 	s := []string{}
 	for _, m := range localMigrations {
 		s = append(s, m.Script)
@@ -109,4 +110,10 @@ func printWarningLog(message string) {
 	if showWarningLog {
 		logg.Println(message)
 	}
+}
+
+func getWorkPath() string {
+	_, b, _, _ := runtime.Caller(0)
+
+	return filepath.Dir(b)
 }

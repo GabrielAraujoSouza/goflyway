@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
 )
 
-type HistoryModel struct {
+type historyModel struct {
 	InstalledRank int
 	Version       string
 	Description   string
@@ -27,7 +25,7 @@ type HistoryModel struct {
 	Success       bool
 }
 
-type LocalScript struct {
+type localScript struct {
 	Version     string
 	Description string
 	Script      string
@@ -44,7 +42,7 @@ type GoFlywayConfig struct {
 	// File name separator for SQL migrations. Default is "__"
 	SqlMigrationSeparator string
 
-	// Location of migrations scripts. Default is "{CURRENT_DIR}/db/migration"
+	// Location of migrations scripts. Examle: "/home/user/my-project/migrations"
 	Location string
 
 	// Whether to allow migrations to be run out of order. Default is "false"
@@ -158,8 +156,7 @@ func (g *GoFlywayRunner) applyDefaultSettings() error {
 	}
 
 	if len(g.config.Location) <= 0 {
-		g.config.Location = getWorkPath() + location
-
+		return ErrLocationCannotBeEmpty
 	}
 
 	err := validateDriver(string(g.config.Driver))
@@ -173,14 +170,14 @@ func (g *GoFlywayRunner) applyDefaultSettings() error {
 }
 
 // ReadLocalMigrations Load migration files
-func (g *GoFlywayRunner) readLocalMigrations() ([]LocalScript, error) {
+func (g *GoFlywayRunner) readLocalMigrations() ([]localScript, error) {
 
-	fail := func(err error) ([]LocalScript, error) {
+	fail := func(err error) ([]localScript, error) {
 		return nil, fmt.Errorf("error reading local migrations: %v", err)
 	}
 
 	c := g.config
-	sqlFiles := []LocalScript{}
+	sqlFiles := []localScript{}
 
 	migrationDir, err := os.ReadDir(c.Location)
 	if err != nil {
@@ -200,7 +197,7 @@ func (g *GoFlywayRunner) readLocalMigrations() ([]LocalScript, error) {
 			if err != nil {
 				printWarningLog(fmt.Sprintf("warning: %v", err))
 			} else {
-				sf := LocalScript{
+				sf := localScript{
 					Version:     version,
 					Description: description,
 					Script:      f.Name(),
@@ -229,9 +226,9 @@ func (g *GoFlywayRunner) readLocalMigrations() ([]LocalScript, error) {
 }
 
 // ReadMigrationTable Load database migrations
-func (g *GoFlywayRunner) readMigrationTable() ([]HistoryModel, error) {
+func (g *GoFlywayRunner) readMigrationTable() ([]historyModel, error) {
 
-	fail := func(err error) ([]HistoryModel, error) {
+	fail := func(err error) ([]historyModel, error) {
 		return nil, fmt.Errorf("error reading migration table: %v", err)
 	}
 
@@ -260,13 +257,7 @@ func (g *GoFlywayRunner) readMigrationTable() ([]HistoryModel, error) {
 	return migrations, nil
 }
 
-func getWorkPath() string {
-	_, b, _, _ := runtime.Caller(0)
-
-	return filepath.Dir(b)
-}
-
-func (g *GoFlywayRunner) validateMigrations(localMigrations []LocalScript, databaseMigrations []HistoryModel) error {
+func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, databaseMigrations []historyModel) error {
 
 	startExec := time.Now().UnixMilli()
 
@@ -331,7 +322,7 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []LocalScript, datab
 	return nil
 }
 
-func (gr *GoFlywayRunner) applyMigrations(localMigrations []LocalScript, databaseMigrations []HistoryModel) (int, error) {
+func (gr *GoFlywayRunner) applyMigrations(localMigrations []localScript, databaseMigrations []historyModel) (int, error) {
 
 	startExec := time.Now().UnixMilli()
 
@@ -359,7 +350,7 @@ func (gr *GoFlywayRunner) applyMigrations(localMigrations []LocalScript, databas
 
 			installedRank++
 
-			newMigration := HistoryModel{
+			newMigration := historyModel{
 				Version:       lm.Version,
 				Description:   lm.Description,
 				Script:        lm.Script,
