@@ -1,10 +1,14 @@
 package goflyway
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 )
+
+var errMig *ErrMigration
 
 func TestValidateMigrations(t *testing.T) {
 
@@ -61,6 +65,10 @@ func TestValidateMigrations_DuplicatedVersionError(t *testing.T) {
 	if err.Error() != expectedMessage {
 		t.Errorf("expected error %v but got %v", expectedMessage, err.Error())
 	}
+
+	if !errors.As(err, &errMig) {
+		t.Errorf("expected error of type %v but got %v", reflect.TypeOf(errMig), reflect.TypeOf(err))
+	}
 }
 
 func TestValidateMigrations_ChecksumMismatchError(t *testing.T) {
@@ -91,6 +99,10 @@ func TestValidateMigrations_ChecksumMismatchError(t *testing.T) {
 	if err.Error() != expectedMessage {
 		t.Errorf("expected error %v but got %v", expectedMessage, err.Error())
 	}
+
+	if !errors.As(err, &errMig) {
+		t.Errorf("expected error of type %v but got %v", reflect.TypeOf(errMig), reflect.TypeOf(err))
+	}
 }
 
 func TestValidateMigrations_DescriptionMismatchError(t *testing.T) {
@@ -120,6 +132,10 @@ func TestValidateMigrations_DescriptionMismatchError(t *testing.T) {
 
 	if err.Error() != expectedMessage {
 		t.Errorf("expected error %v but got %v", expectedMessage, err.Error())
+	}
+
+	if !errors.As(err, &errMig) {
+		t.Errorf("expected error of type %v but got %v", reflect.TypeOf(errMig), reflect.TypeOf(err))
 	}
 }
 
@@ -154,6 +170,10 @@ func TestValidateMigrations_OutOfOrderError(t *testing.T) {
 	if err.Error() != expectedMessage {
 		t.Errorf("expected error %v but got %v", expectedMessage, err.Error())
 	}
+
+	if !errors.As(err, &errMig) {
+		t.Errorf("expected error of type %v but got %v", reflect.TypeOf(errMig), reflect.TypeOf(err))
+	}
 }
 
 func TestValidateMigrations_ValidateMissionMigrationError(t *testing.T) {
@@ -186,6 +206,10 @@ func TestValidateMigrations_ValidateMissionMigrationError(t *testing.T) {
 
 	if err.Error() != expectedMessage {
 		t.Errorf("expected error %v but got %v", expectedMessage, err.Error())
+	}
+
+	if !errors.As(err, &errMig) {
+		t.Errorf("expected error of type %v but got %v", reflect.TypeOf(errMig), reflect.TypeOf(err))
 	}
 }
 

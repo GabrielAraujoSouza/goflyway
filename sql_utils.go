@@ -24,7 +24,7 @@ var fail = func(err error) (int64, error) {
 	return 0, fmt.Errorf("error inserting migration history: %v", err)
 }
 
-func getCreateTableCommand(driver Driver, tableName string) string {
+func getCreateTableCommand(driver driver, tableName string) string {
 	var createCommand string
 
 	switch driver {
@@ -36,7 +36,7 @@ func getCreateTableCommand(driver Driver, tableName string) string {
 	return regexTableName.ReplaceAllString(createCommand, tableName)
 }
 
-func getSelectTableCommand(driver Driver, tableName string) string {
+func getSelectTableCommand(driver driver, tableName string) string {
 	var selectCommand string
 
 	switch driver {
@@ -48,7 +48,7 @@ func getSelectTableCommand(driver Driver, tableName string) string {
 	return regexTableName.ReplaceAllString(selectCommand, tableName)
 }
 
-func parseInsertMigration(driver Driver, tableName string) string {
+func parseInsertMigration(driver driver, tableName string) string {
 	var insertCommand string
 
 	switch driver {
@@ -148,7 +148,7 @@ func selectMigrationHistory(db *sql.DB, query string) ([]historyModel, error) {
 	return result, nil
 }
 
-func executeMigration(db *sql.DB, insertQuery string, history historyModel, g *GoFlywayRunner) (*historyModel, error) {
+func executeMigration(db *sql.DB, insertQuery string, history historyModel, g *goFlywayRunner) (*historyModel, error) {
 
 	startExec := time.Now().UnixMilli()
 
@@ -201,7 +201,7 @@ func insertMigration(db *sql.DB, insertQuery string, history historyModel) (int6
 	return rw, nil
 }
 
-func executeScript(db *sql.DB, history historyModel, g *GoFlywayRunner) (int64, error) {
+func executeScript(db *sql.DB, history historyModel, g *goFlywayRunner) (int64, error) {
 
 	scriptFile := fmt.Sprintf("%s/%s", g.config.Location, history.Script)
 
@@ -236,7 +236,7 @@ func executeScript(db *sql.DB, history historyModel, g *GoFlywayRunner) (int64, 
 	return rw, nil
 }
 
-func queryExecutor(tx *sql.Tx, query string, g *GoFlywayRunner) (sql.Result, error) {
+func queryExecutor(tx *sql.Tx, query string, g *goFlywayRunner) (sql.Result, error) {
 
 	if g.config.Driver == POSTGRES {
 		return tx.Exec(query)

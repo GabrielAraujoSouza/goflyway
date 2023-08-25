@@ -10,5 +10,21 @@ var (
 )
 
 var (
-	WarnNoMigrationFound = "no migrations found, are your location set up correctly?"
+	warnNoMigrationFound = "no migrations found, are your location set up correctly?"
 )
+
+type ErrMigration struct {
+	message string
+}
+
+func (e *ErrMigration) Error() string {
+	return e.message
+}
+
+func throwErrMigration(err error) error {
+	e := ErrMigration{
+		message: err.Error(),
+	}
+
+	return &e
+}

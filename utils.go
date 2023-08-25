@@ -19,11 +19,11 @@ var regexTableName = regexp.MustCompile(`\[tableName\]`)
 var regexVersion = regexp.MustCompile(`^\d((_\d)|(\d))*$`)
 var showWarningLog bool
 
-type Driver string
+type driver string
 
 const (
-	POSTGRES Driver = "postgres"
-	MYSQL    Driver = "mysql"
+	POSTGRES driver = "postgres"
+	MYSQL    driver = "mysql"
 )
 
 func extractValuesFromScriptName(name string, prefix string, separator string, sufix string) (string, string, error) {

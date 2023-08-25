@@ -55,7 +55,7 @@ type GoFlywayConfig struct {
 	Db *sql.DB
 
 	// Database drive
-	Driver Driver
+	Driver driver
 
 	// Shows warning logs. Default is "false"
 	ShowWarningLog bool
@@ -64,7 +64,7 @@ type GoFlywayConfig struct {
 	sqlMigrationSuffix string
 }
 
-type GoFlywayRunner struct {
+type goFlywayRunner struct {
 	config      GoFlywayConfig
 	initialized bool
 }
@@ -109,22 +109,22 @@ func CalculateChecksum(filename string) (string, error) {
 
 	f, err := os.Open(filename)
 	if err != nil {
-		return "", err
+		return "", throwErrMigration(err)
 	}
 	defer f.Close()
 
 	hasher := sha256.New()
 	_, err = io.Copy(hasher, f)
 	if err != nil {
-		return "", err
+		return "", throwErrMigration(err)
 	}
 
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func newGoFlywayRunner(config GoFlywayConfig) (*GoFlywayRunner, error) {
+func newGoFlywayRunner(config GoFlywayConfig) (*goFlywayRunner, error) {
 
-	c := &GoFlywayRunner{
+	c := &goFlywayRunner{
 		config: config,
 	}
 
@@ -139,7 +139,7 @@ func newGoFlywayRunner(config GoFlywayConfig) (*GoFlywayRunner, error) {
 }
 
 // applyDefaultSettings Fill config values if it is empty
-func (g *GoFlywayRunner) applyDefaultSettings() error {
+func (g *goFlywayRunner) applyDefaultSettings() error {
 
 	g.config.sqlMigrationSuffix = ".sql"
 
@@ -170,10 +170,10 @@ func (g *GoFlywayRunner) applyDefaultSettings() error {
 }
 
 // ReadLocalMigrations Load migration files
-func (g *GoFlywayRunner) readLocalMigrations() ([]localScript, error) {
+func (g *goFlywayRunner) readLocalMigrations() ([]localScript, error) {
 
 	fail := func(err error) ([]localScript, error) {
-		return nil, fmt.Errorf("error reading local migrations: %v", err)
+		return nil, throwErrMigration(fmt.Errorf("error reading local migrations: %v", err))
 	}
 
 	c := g.config
@@ -185,7 +185,7 @@ func (g *GoFlywayRunner) readLocalMigrations() ([]localScript, error) {
 	}
 
 	if len(migrationDir) <= 0 {
-		printWarningLog(WarnNoMigrationFound)
+		printWarningLog(warnNoMigrationFound)
 	}
 
 	for _, f := range migrationDir {
@@ -215,7 +215,7 @@ func (g *GoFlywayRunner) readLocalMigrations() ([]localScript, error) {
 	}
 
 	if len(sqlFiles) <= 0 {
-		printWarningLog(WarnNoMigrationFound)
+		printWarningLog(warnNoMigrationFound)
 	}
 
 	sort.SliceStable(sqlFiles, func(i, j int) bool {
@@ -226,10 +226,10 @@ func (g *GoFlywayRunner) readLocalMigrations() ([]localScript, error) {
 }
 
 // ReadMigrationTable Load database migrations
-func (g *GoFlywayRunner) readMigrationTable() ([]historyModel, error) {
+func (g *goFlywayRunner) readMigrationTable() ([]historyModel, error) {
 
 	fail := func(err error) ([]historyModel, error) {
-		return nil, fmt.Errorf("error reading migration table: %v", err)
+		return nil, throwErrMigration(fmt.Errorf("error reading migration table: %v", err))
 	}
 
 	db := g.config.Db
@@ -257,7 +257,7 @@ func (g *GoFlywayRunner) readMigrationTable() ([]historyModel, error) {
 	return migrations, nil
 }
 
-func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, databaseMigrations []historyModel) error {
+func (g *goFlywayRunner) validateMigrations(localMigrations []localScript, databaseMigrations []historyModel) error {
 
 	startExec := time.Now().UnixMilli()
 
@@ -268,8 +268,8 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, datab
 		dupLocalMg := findLocalMigrationsByVersion(localMigrations, lm.Version)
 
 		if len(dupLocalMg) > 1 {
-			return fmt.Errorf("found more than one migration with version %s: %s",
-				lm.Version, getScriptNames(dupLocalMg))
+			return throwErrMigration(fmt.Errorf("found more than one migration with version %s: %s",
+				lm.Version, getScriptNames(dupLocalMg)))
 		}
 
 		dm := findMigrationByVersion(databaseMigrations, lm.Version)
@@ -277,13 +277,13 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, datab
 		if dm != nil {
 
 			if dm.Checksum != lm.Checksum {
-				return fmt.Errorf("migration checksum mismatch for migration version %s: applied to database = %s, resolved locally = %s",
-					lm.Version, dm.Checksum, lm.Checksum)
+				return throwErrMigration(fmt.Errorf("migration checksum mismatch for migration version %s: applied to database = %s, resolved locally = %s",
+					lm.Version, dm.Checksum, lm.Checksum))
 			}
 
 			if dm.Description != lm.Description {
-				return fmt.Errorf("migration description mismatch for migration version %s: applied to database = %s, resolved locally = %s",
-					lm.Version, dm.Description, lm.Description)
+				return throwErrMigration(fmt.Errorf("migration description mismatch for migration version %s: applied to database = %s, resolved locally = %s",
+					lm.Version, dm.Description, lm.Description))
 			}
 		}
 
@@ -292,8 +292,8 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, datab
 
 			migrationIndex := findMigrationIndexByVersion(databaseMigrations, lm.Version)
 			if migrationIndex == -1 && i < len(databaseMigrations) {
-				return fmt.Errorf("detected resolved migration not applied to database: %s, to allow executing this migration, set OutOfOrder=true",
-					lm.Version)
+				return throwErrMigration(fmt.Errorf("detected resolved migration not applied to database: %s, to allow executing this migration, set OutOfOrder=true",
+					lm.Version))
 			}
 		}
 	}
@@ -307,7 +307,7 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, datab
 			lm := findLocalMigrationByVersion(localMigrations, dm.Version)
 
 			if lm == nil {
-				return fmt.Errorf("detected applied migration not resolved locally: %s", dm.Version)
+				return throwErrMigration(fmt.Errorf("detected applied migration not resolved locally: %s", dm.Version))
 			}
 		}
 	}
@@ -322,7 +322,7 @@ func (g *GoFlywayRunner) validateMigrations(localMigrations []localScript, datab
 	return nil
 }
 
-func (gr *GoFlywayRunner) applyMigrations(localMigrations []localScript, databaseMigrations []historyModel) (int, error) {
+func (gr *goFlywayRunner) applyMigrations(localMigrations []localScript, databaseMigrations []historyModel) (int, error) {
 
 	startExec := time.Now().UnixMilli()
 
@@ -361,7 +361,7 @@ func (gr *GoFlywayRunner) applyMigrations(localMigrations []localScript, databas
 
 			_, err := executeMigration(gr.config.Db, parseInsertMigration(gr.config.Driver, gr.config.Table), newMigration, gr)
 			if err != nil {
-				return countMigrations, fmt.Errorf("migration %s failed: %v", newMigration.Script, err)
+				return countMigrations, throwErrMigration(fmt.Errorf("migration %s failed: %v", newMigration.Script, err))
 			}
 
 			logg.Printf("migrating schema to version %s - %s", newMigration.Version, newMigration.Description)
