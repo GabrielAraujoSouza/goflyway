@@ -32,7 +32,10 @@ func getCreateTableCommand(driver driver, tableName string) string {
 		createCommand = createTablePostgres
 	case MYSQL:
 		createCommand = createTableMysql
+	case MSSQLSERVER:
+		createCommand = createTableMsSqlServer
 	}
+
 	return regexTableName.ReplaceAllString(createCommand, tableName)
 }
 
@@ -44,6 +47,8 @@ func getSelectTableCommand(driver driver, tableName string) string {
 		selectCommand = selectTablePostgres
 	case MYSQL:
 		selectCommand = selectTableMysql
+	case MSSQLSERVER:
+		selectCommand = selectTableMsSqlServer
 	}
 	return regexTableName.ReplaceAllString(selectCommand, tableName)
 }
@@ -56,13 +61,15 @@ func parseInsertMigration(driver driver, tableName string) string {
 		insertCommand = insertPostgres
 	case MYSQL:
 		insertCommand = insertMysql
+	case MSSQLSERVER:
+		insertCommand = insertMsSqlServer
 	}
 	return regexTableName.ReplaceAllString(insertCommand, tableName)
 }
 
 func validateDriver(s string) error {
 	switch s {
-	case string(POSTGRES), string(MYSQL):
+	case string(POSTGRES), string(MYSQL), string(MSSQLSERVER):
 		return nil
 	default:
 		return ErrUnsupportedDatabaseDriver
@@ -162,7 +169,7 @@ func executeMigration(db *sql.DB, insertQuery string, history historyModel, g *g
 	total := int(endExec - startExec)
 	history.ExecutionTime = total
 
-	_, err = insertMigration(db, insertQuery, history)
+	_, err = insertMigration(db, insertQuery, history, g)
 	if err != nil {
 		return nil, err
 	}
@@ -170,21 +177,14 @@ func executeMigration(db *sql.DB, insertQuery string, history historyModel, g *g
 	return nil, nil
 }
 
-func insertMigration(db *sql.DB, insertQuery string, history historyModel) (int64, error) {
+func insertMigration(db *sql.DB, insertQuery string, history historyModel, g *goFlywayRunner) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return fail(err)
 	}
 	defer tx.Rollback()
 
-	r1, err := tx.Exec(insertQuery,
-		history.InstalledRank,
-		history.Version,
-		history.Description,
-		history.Type,
-		history.Script,
-		history.Checksum,
-		history.ExecutionTime)
+	r1, err := insertExecutor(tx, insertQuery, history, g)
 	if err != nil {
 		return fail(err)
 	}
@@ -247,5 +247,33 @@ func queryExecutor(tx *sql.Tx, query string, g *goFlywayRunner) (sql.Result, err
 		return tx.Exec(query)
 	}
 
+	if g.config.Driver == MSSQLSERVER {
+		return tx.Exec(query)
+	}
+
 	return nil, fmt.Errorf("no driver found on execute")
+}
+
+func insertExecutor(tx *sql.Tx, insertQuery string, history historyModel, g *goFlywayRunner) (sql.Result, error) {
+
+	if g.config.Driver == MSSQLSERVER {
+
+		return tx.Exec(insertQuery,
+			sql.Named("installed_rank", history.InstalledRank),
+			sql.Named("version", history.Version),
+			sql.Named("description", history.Description),
+			sql.Named("type", history.Type),
+			sql.Named("script", history.Script),
+			sql.Named("checksum", history.Checksum),
+			sql.Named("execution_time", history.ExecutionTime))
+	}
+
+	return tx.Exec(insertQuery,
+		history.InstalledRank,
+		history.Version,
+		history.Description,
+		history.Type,
+		history.Script,
+		history.Checksum,
+		history.ExecutionTime)
 }

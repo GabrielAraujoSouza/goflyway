@@ -20,6 +20,7 @@ go get github.com/gabrielaraujosouza/goflyway
 ## Supported Databases
 - PostgreSQL
 - MySQL
+- Microsoft SQL Server
 
 ## Usage
 
@@ -92,4 +93,5 @@ Property | Default | Description |
 
 ### Next features
 
-- Support Microsoft Sql Server
+- Fix MySQL multiple statements
+- SQLite support

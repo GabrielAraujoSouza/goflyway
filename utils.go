@@ -22,8 +22,9 @@ var showWarningLog bool
 type driver string
 
 const (
-	POSTGRES driver = "postgres"
-	MYSQL    driver = "mysql"
+	POSTGRES    driver = "postgres"
+	MYSQL       driver = "mysql"
+	MSSQLSERVER driver = "sqlserver"
 )
 
 func extractValuesFromScriptName(name string, prefix string, separator string, sufix string) (string, string, error) {
