@@ -21,6 +21,7 @@ go get github.com/gabrielaraujosouza/goflyway
 - PostgreSQL
 - MySQL
 - Microsoft SQL Server
+- Sqlite3
 
 ## Usage
 
@@ -94,4 +95,3 @@ Property | Default | Description |
 ### Next features
 
 - Fix MySQL multiple statements
-- SQLite support
