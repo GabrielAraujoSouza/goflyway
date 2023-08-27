@@ -25,6 +25,7 @@ const (
 	POSTGRES    driver = "postgres"
 	MYSQL       driver = "mysql"
 	MSSQLSERVER driver = "sqlserver"
+	SQLITE3     driver = "sqlite3"
 )
 
 func extractValuesFromScriptName(name string, prefix string, separator string, sufix string) (string, string, error) {

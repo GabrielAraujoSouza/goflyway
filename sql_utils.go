@@ -34,6 +34,8 @@ func getCreateTableCommand(driver driver, tableName string) string {
 		createCommand = createTableMysql
 	case MSSQLSERVER:
 		createCommand = createTableMsSqlServer
+	case SQLITE3:
+		createCommand = createTableSqlite3
 	}
 
 	return regexTableName.ReplaceAllString(createCommand, tableName)
@@ -49,6 +51,8 @@ func getSelectTableCommand(driver driver, tableName string) string {
 		selectCommand = selectTableMysql
 	case MSSQLSERVER:
 		selectCommand = selectTableMsSqlServer
+	case SQLITE3:
+		selectCommand = selectTableSqlite3
 	}
 	return regexTableName.ReplaceAllString(selectCommand, tableName)
 }
@@ -63,13 +67,15 @@ func parseInsertMigration(driver driver, tableName string) string {
 		insertCommand = insertMysql
 	case MSSQLSERVER:
 		insertCommand = insertMsSqlServer
+	case SQLITE3:
+		insertCommand = insertSqlite3
 	}
 	return regexTableName.ReplaceAllString(insertCommand, tableName)
 }
 
 func validateDriver(s string) error {
 	switch s {
-	case string(POSTGRES), string(MYSQL), string(MSSQLSERVER):
+	case string(POSTGRES), string(MYSQL), string(MSSQLSERVER), string(SQLITE3):
 		return nil
 	default:
 		return ErrUnsupportedDatabaseDriver
@@ -248,6 +254,10 @@ func queryExecutor(tx *sql.Tx, query string, g *goFlywayRunner) (sql.Result, err
 	}
 
 	if g.config.Driver == MSSQLSERVER {
+		return tx.Exec(query)
+	}
+
+	if g.config.Driver == SQLITE3 {
 		return tx.Exec(query)
 	}
 

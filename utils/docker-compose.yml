@@ -21,3 +21,14 @@ services:
       - '3306:3306'
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+    
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "password#999"
+    ports:
+      - '1433:1433'
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+      

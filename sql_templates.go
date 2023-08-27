@@ -85,3 +85,34 @@ const insertMsSqlServer = `
 	(installed_rank, "version", description, "type", script, checksum, installed_by, installed_on, execution_time, success)
 	VALUES(@installed_rank, @version, @description, @type, @script, @checksum, current_user, current_timestamp, @execution_time, 1)
 `
+
+// Sqlite3
+
+const createTableSqlite3 = `
+	CREATE TABLE IF NOT EXISTS "[tableName]" (
+		installed_rank BIGINT NOT NULL,
+		"version" VARCHAR(255),
+		description VARCHAR(255),
+		"type" VARCHAR(50),
+		"script" VARCHAR(255),
+		checksum VARCHAR(255),
+		installed_by VARCHAR(255),
+		installed_on TIMESTAMP,
+		execution_time BIGINT,
+		success BOOLEAN,
+
+		CONSTRAINT pk_goflyway_sch_hist PRIMARY KEY (installed_rank)
+	)
+`
+
+const selectTableSqlite3 = `
+	SELECT installed_rank, "version", description, "type", "script", 
+	  	   checksum, installed_by, installed_on, execution_time, success
+	FROM "[tableName]" ORDER BY "version"
+`
+
+const insertSqlite3 = `
+	INSERT INTO "[tableName]"
+	(installed_rank, "version", description, "type", script, checksum, installed_by, installed_on, execution_time, success)
+	VALUES(?, ?, ?, ?, ?, ?, "anonymous", current_timestamp, ?, true);
+`
