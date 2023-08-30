@@ -22,7 +22,9 @@ var showWarningLog bool
 type driver string
 
 const (
-	POSTGRES    driver = "postgres"
+	POSTGRES driver = "postgres"
+
+	// connection instance must have `multiStatements` set to true
 	MYSQL       driver = "mysql"
 	MSSQLSERVER driver = "sqlserver"
 	SQLITE3     driver = "sqlite3"

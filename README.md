@@ -19,7 +19,7 @@ go get github.com/gabrielaraujosouza/goflyway
 
 ## Supported Databases
 - PostgreSQL
-- MySQL
+- MySQL (connection instance must have `multiStatements` set to `true`)
 - Microsoft SQL Server
 - Sqlite3
 
@@ -88,10 +88,3 @@ Property | Default | Description |
 **Driver** | - | `Database drive`
 **ShowWarningLog** | `false`| `Shows warning logs`
 
-## Limitatios
-
-- Not able to execute script with multiple statements when using MySQL
-
-### Next features
-
-- Fix MySQL multiple statements
