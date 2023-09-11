@@ -2,7 +2,7 @@
 
 <img align="right" width="159px" src="https://raw.githubusercontent.com/gabrielaraujosouza/logo/master/goflyway-logo.png">
 
-Migration library written in go inspired by <a href="https://flywaydb.org/" target="_blank">flyway</a>
+Database migration library written in go inspired by <a href="https://flywaydb.org/" target="_blank">flyway</a>
 
 ## Download
 
